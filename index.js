@@ -38,16 +38,55 @@ async function run() {
             console.log(result);
             res.json(result);
         });
-
-        app.get("/booking/:serviceId", async (req, res) => {
-            const id = parseInt(req.params.serviceId);
-            console.log(typeof(id));
-            const query = { key : id };
-            const result = await resortCollection.findOne(query);
+        app.post("/add-service", async (req, res) => {
+            console.log(req.body);
+            const result = await resortCollection.insertOne(req.body);
             console.log(result);
+            res.json(result);
+        });
+        app.get("/booking/:serviceId", async (req, res) => {
+            const id = req.params.serviceId;
+            const query = { _id: ObjectId(id) };
+            console.log('query', query);
+            const result = await resortCollection.findOne(query);
+            res.json(result);
+        });
+        
+        app.get('/myOrders/:email', async (req, res) => {
+            const email = req.params.email;
+            //console.log(email);
+            const query = { email: email };
+            //console.log(query);
+            const cursor = orderCollection.find(query);
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+        app.get('/manageOrders', async (req, res) => {
+            const cursor = orderCollection.find({});
+            const orders = await cursor.toArray();
+            res.send(orders);
+        });
+
+        app.delete("/deleteOrder/:id", async (req, res) => {
+            console.log(req.params.id);
+            const result = await orderCollection.deleteOne({
+                _id: ObjectId(req.params.id),
+            });
             res.send(result);
         });
 
+        app.put('/updateOrder/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    status: 'Approved'
+                },
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc, options)
+            res.json(result)
+        })
 
     }
     finally {
@@ -63,3 +102,9 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
     console.log('Running Genius Server on port ', port);
 });
+
+
+//future update
+//1. git add, commit, push
+//2. save everything and check locally
+//3. git push heroku main

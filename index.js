@@ -51,7 +51,7 @@ async function run() {
             const result = await resortCollection.findOne(query);
             res.json(result);
         });
-        
+
         app.get('/myOrders/:email', async (req, res) => {
             const email = req.params.email;
             //console.log(email);

@@ -40,14 +40,22 @@ async function run() {
         //     res.json(result);
         // });
 
-        // app.get('/movie/:mId', async (req, res) => {
-        //     const id = req.params.mId;
-        //    // console.log(id);
-        //     const query = { _id: ObjectId(id) };
-        //     const result = await mainCollection.findOne(query);
-        //     res.send(result);
-        // });
-
+        app.get('/shirt/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const query = { id: id };
+            const result = await clothCollection.findOne(query);
+            console.log(result);
+            res.send(result);
+        });
+        app.get('/gadget/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(typeof(id));
+            const query = { id: parseInt(id) };
+            const result = await gadgetCollection.findOne(query);
+            console.log(result);
+            res.send(result);
+        });
         // app.post('/watchlist', async (req, res) => {
         //     const order = req.body;
         //     const result = await watchlistCollection.insertOne(order);

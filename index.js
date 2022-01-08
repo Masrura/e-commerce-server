@@ -26,6 +26,7 @@ async function run() {
         const inventoryCollection = database.collection("inventory");
         const cartCollection = database.collection("cart");
         const wishlistCollection = database.collection("wishlist");
+        const orderCollection = database.collection("order");
 
         app.get('/shirts', async (req, res) => {
             const cursor = clothCollection.find({});
@@ -55,6 +56,25 @@ async function run() {
             res.json(result);
         });
 
+        app.post('/order', async (req, res) => {
+            const order = req.body;
+            console.log('placed order is', order);
+            const result = await orderCollection.insertOne(order);
+            if (result) {
+                const query = { email: order.orderedBy };
+                const result2 = await cartCollection.deleteMany(query);
+            }
+            res.json(result);
+        });
+        app.get('/order/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log(email);
+            const query = { orderedBy: email };
+            const cursor = await orderCollection.find(query);
+            const result = await cursor.toArray();
+
+            res.json(result);
+        });
         app.get('/shirt/:id', async (req, res) => {
             const id = req.params.id;
             console.log(id);

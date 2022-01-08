@@ -24,6 +24,8 @@ async function run() {
         const foodCollection = database.collection("food");
         const usersCollection = database.collection("users");
         const inventoryCollection = database.collection("inventory");
+        const cartCollection = database.collection("cart");
+        const wishlistCollection = database.collection("wishlist");
 
         app.get('/shirts', async (req, res) => {
             const cursor = clothCollection.find({});
@@ -69,29 +71,71 @@ async function run() {
             console.log(result);
             res.send(result);
         });
-        // app.post('/watchlist', async (req, res) => {
-        //     const order = req.body;
-        //     const result = await watchlistCollection.insertOne(order);
-        //     res.json(result);
-        // });
-        // app.get('/watchlist/:email', async (req, res) => {
-        //     const email = req.params.email;
-        //     console.log(email);
-        //     const query = { user: email };
-        //     const cursor = await watchlistCollection.find(query);
-        //     const result = await cursor.toArray();
-        //     console.log('result is', result);
-        //     const watchlist=[];
-        //     for (r of result) {
-        //         console.log('id is', r.movieId);
-        //         const query2 = { _id: ObjectId(r.movieId) };
-        //         const result2 = await mainCollection.findOne(query2);
-        //         watchlist.push(result2);
-        //     }
-        //    // console.log('watchlist is ', watchlist)
-        //     res.json(watchlist);
-
-        // });
+        app.get('/food/:id', async (req, res) => {
+            const id = req.params.id;
+            //console.log(typeof (id));
+            const query = { _id: ObjectId(id) };
+            const result = await foodCollection.findOne(query);
+            console.log(result);
+            res.send(result);
+        });
+        app.post('/cart', async (req, res) => {
+            const order = req.body;
+            console.log('order is', order);
+            const query = { _id: order._id };
+            const result = await cartCollection.findOne(query);
+            if (result) {
+                const filter = { _id: order._id }
+                console.log(result);
+                const newQuantity = result.quantity + 1;
+                console.log('new quantiy is', newQuantity);
+                const updateDoc = { $set: { quantity: newQuantity } };
+                const result2 = await cartCollection.updateOne(filter, updateDoc);
+                console.log('if exist', result2);
+                res.json(result2)
+            }
+            else {
+                console.log('oder before adding quantiyy', order);
+                order.quantity = 1;
+                console.log('oder after adding quantiyy', order);
+                const result2 = await cartCollection.insertOne(order);
+                console.log('if dont exist', result2);
+                res.json(result2);
+            }
+            
+        });
+        app.post('/wishlist', async (req, res) => {
+            const order = req.body;
+            try {
+                const result = await wishlistCollection.insertOne(order);
+                res.json(result);
+                
+                // business logic goes here
+            } catch (error) {
+                //console.log('error is', error.code); // from creation or business logic
+                res.json(error.code);
+            }
+          
+           
+        });
+        app.get('/cart/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log(email);
+            const query = { email: email };
+            const cursor = await cartCollection.find(query);
+            const result = await cursor.toArray();
+            console.log('result is', result);
+            res.json(result);
+        });
+        app.get('/wishlist/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log(email);
+            const query = { email: email };
+            const cursor = await wishlistCollection.find(query);
+            const result = await cursor.toArray();
+            console.log('result is', result);
+            res.json(result);
+        });
 
         app.post('/users', async (req, res) => {
             const user = req.body;
@@ -138,6 +182,22 @@ async function run() {
             console.log(req.params.id);
             const result = await inventoryCollection.deleteOne({
                 _id: ObjectId(req.params.id),
+            });
+            res.send(result);
+        });
+        app.delete("/delete-wishlist/:id", async (req, res) => {
+            console.log('server hitted')
+            console.log(req.params.id);
+            const result = await wishlistCollection.deleteOne({
+                _id: req.params.id,
+            });
+            res.send(result);
+        });
+        app.delete("/deleteCart/:id", async (req, res) => {
+            console.log('server hitted')
+            console.log(req.params.id);
+            const result = await cartCollection.deleteOne({
+                _id: req.params.id,
             });
             res.send(result);
         });

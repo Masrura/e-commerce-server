@@ -221,9 +221,15 @@ async function run() {
             });
             res.send(result);
         });
+        app.get('/site1', (req, res) => {
+            res.send("Running site 1");
+        })
+        app.get('/site2', (req, res) => {
+            res.send("Running site 2");
+        })
     }
     finally {
-        //await client.close();
+       // await client.close();
     }
 }
 run().catch(console.dir);
